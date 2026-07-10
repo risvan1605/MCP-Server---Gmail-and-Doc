@@ -153,6 +153,25 @@ Add to your VS Code settings:
 }
 ```
 
+## Vercel Deployment
+
+This MCP server is configured for serverless deployment on Vercel using Server-Sent Events (SSE).
+
+1. Push your code to a GitHub repository.
+2. Go to the [Vercel Dashboard](https://vercel.com/) and create a new project from your repository.
+3. In the environment variables section, add the following variable:
+   - Key: `GOOGLE_TOKEN_JSON`
+   - Value: (Paste the exact contents of your local `token.json` file)
+4. Also add:
+   - Key: `VERCEL`
+   - Value: `1`
+5. Deploy the project!
+
+Once deployed, your MCP SSE endpoint will be available at:
+`https://<your-vercel-domain>/sse`
+
+Clients connecting to a Vercel-deployed server must use the SSE transport configuration instead of the stdio transport.
+
 ## Testing with MCP Inspector
 
 Use the official MCP Inspector to test your server interactively:

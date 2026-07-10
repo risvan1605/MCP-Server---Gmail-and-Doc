@@ -26,6 +26,9 @@ CREDENTIALS_PATH = Path(os.getenv("GOOGLE_CREDENTIALS_PATH", BASE_DIR / "credent
 # Cached OAuth token (created after first successful authentication)
 TOKEN_PATH = Path(os.getenv("GOOGLE_TOKEN_PATH", BASE_DIR / "token.json"))
 
+# Direct token injection (for serverless deployments like Vercel)
+GOOGLE_TOKEN_JSON = os.getenv("GOOGLE_TOKEN_JSON")
+
 
 # ---------------------------------------------------------------------------
 # Google API Scopes

@@ -9,14 +9,23 @@ Handles the full OAuth lifecycle:
 Provides factory functions to build authenticated Gmail and Docs API services.
 """
 
+import json
 import logging
+import os
+import sys
+from pathlib import Path
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from google_mcp_server.config import CREDENTIALS_PATH, SCOPES, TOKEN_PATH
+from google_mcp_server.config import (
+    CREDENTIALS_PATH,
+    GOOGLE_TOKEN_JSON,
+    SCOPES,
+    TOKEN_PATH,
+)
 
 # Use stderr for logging — stdout is reserved for MCP stdio transport
 logger = logging.getLogger(__name__)
@@ -34,8 +43,18 @@ def get_credentials() -> Credentials:
     """
     creds = None
 
-    # Step 1: Try loading cached token
-    if TOKEN_PATH.exists():
+    # Step 1: Try loading token from environment variable (Vercel)
+    if GOOGLE_TOKEN_JSON:
+        try:
+            token_info = json.loads(GOOGLE_TOKEN_JSON)
+            creds = Credentials.from_authorized_user_info(token_info, SCOPES)
+            logger.info("Loaded token from GOOGLE_TOKEN_JSON environment variable")
+        except Exception as exc:
+            logger.warning("Failed to load token from environment: %s", exc)
+            creds = None
+
+    # Step 1.5: Try loading cached token from file
+    if not creds and TOKEN_PATH.exists():
         try:
             creds = Credentials.from_authorized_user_file(str(TOKEN_PATH), SCOPES)
             logger.info("Loaded cached token from %s", TOKEN_PATH)
@@ -55,6 +74,13 @@ def get_credentials() -> Credentials:
 
     # Step 3: Run interactive OAuth flow if no valid credentials
     if not creds or not creds.valid:
+        if os.getenv("VERCEL") or not sys.stdin.isatty():
+            # In a serverless or non-interactive environment, we can't run the OAuth flow
+            raise RuntimeError(
+                "No valid OAuth credentials found. "
+                "Please set GOOGLE_TOKEN_JSON in your environment."
+            )
+
         if not CREDENTIALS_PATH.exists():
             raise FileNotFoundError(
                 f"Google OAuth credentials file not found at {CREDENTIALS_PATH}. "
