@@ -33,8 +33,7 @@ def create_server() -> FastMCP:
     mcp = FastMCP(
         SERVER_NAME,
         transport_security=TransportSecuritySettings(
-            enable_dns_rebinding_protection=True,
-            allowed_hosts=["localhost", "127.0.0.1", "mcp-server-gmail-and-doc.vercel.app"]
+            enable_dns_rebinding_protection=False,
         )
     )
 
