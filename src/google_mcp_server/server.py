@@ -27,8 +27,16 @@ def create_server() -> FastMCP:
 
     logger.info("Initializing %s v%s", SERVER_NAME, SERVER_VERSION)
 
-    # Create the FastMCP server
-    mcp = FastMCP(SERVER_NAME)
+    from mcp.server.transport_security import TransportSecuritySettings
+    
+    # Create the FastMCP server with allowed hosts for Vercel deployment
+    mcp = FastMCP(
+        SERVER_NAME,
+        transport_security=TransportSecuritySettings(
+            enable_dns_rebinding_protection=True,
+            allowed_hosts=["localhost", "127.0.0.1", "*.vercel.app"]
+        )
+    )
 
     # Register tool modules
     register_gmail_tools(mcp)
